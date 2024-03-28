@@ -207,7 +207,7 @@ class Moderation(commands.Cog):
         await ctx.channel.purge(limit=limit+1)  # Limpa mensagens, incluindo o comando
         await ctx.send(f"{limit} mensagens foram excluídas.", delete_after=5)
 
-TOKEN = "MTIxNTM5OTY2NzI5MTEzMTk2NQ.G3M1dH.FDJNmUkW8L9yJxPRi8OTOgeS6qUyxLrKuXoWnk"
+TOKEN = "SEU_TOKEN_DISCORD"
 
 intents = Intents.default()
 intents.messages = True
