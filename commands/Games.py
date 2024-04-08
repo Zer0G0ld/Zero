@@ -3,13 +3,14 @@ import asyncio
 import random
 import sqlite3
 
-from discord import Intents
 from discord.ext import commands
+from commands.utils.data import DataManager
 
 class Games(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.games = {}
+        self.data_manager = DataManager("data.db")
 
     @commands.command(name='forca', help='Inicia um jogo da forca')
     async def forca(self, ctx):
@@ -62,7 +63,7 @@ class Games(commands.Cog):
         user_id = ctx.author.id
         coins_reward = 200
         await ctx.send(f"Parabéns! Você ganhou {coins_reward} moedas.")
-        self.bot.get_cog('Economy').add_coins(user_id, coins_reward)
+        await DataManager.add_coins(user_id, coins_reward)
 
     def update_palavra_atual(self, palavra_atual, palavra_secreta, letra):
         return [letra if char == letra else atual for atual, char in zip(palavra_atual, palavra_secreta)]
