@@ -13,12 +13,17 @@ class Economy(commands.Cog):
         self.data_manager.create_connection()
         self.create_economy_table()
 
+    def add_coins(self, user_id, amount):
+        # Usa o método add_coins do DataManager para adicionar moedas ao usuário
+        self.data_manager.add_coins(user_id, amount)
+        print(f"{amount} moedas adicionadas à conta de {user_id}.")
+        
     def cog_unload(self):
         self.data_manager.conn.close()
 
     @commands.Cog.listener()
     async def on_ready(self):
-        logger.info(f"Economy cog está pronta.")
+        logging.info(f"Economy cog está pronta.")
 
     def create_economy_table(self):
         self.data_manager.create_tables()
@@ -33,8 +38,11 @@ class Economy(commands.Cog):
         try:
             coins = self.data_manager.get_user_coins(user_id)
             await ctx.send(f"Seu saldo atual é de {coins} moedas.")
+        except UserNotFoundException:
+            await ctx.send("Usuário não encontrado.")
         except Exception as e:
             await ctx.send("Ocorreu um erro ao obter o saldo.")
+
 
     @commands.command(name='dar', help='Dê um pouco da sua grana para um colega')
     async def dar(self, ctx, member: discord.Member, amount: int):
@@ -51,8 +59,10 @@ class Economy(commands.Cog):
         try:
             self.data_manager.transfer_coins(user_id, receiver_id, amount)
             await ctx.send(f"{ctx.author.display_name} deu {amount} moedas para {member.display_name}.")
-        except Exception as e:
-            await ctx.send("Ocorreu um erro ao dar moedas.")
+        except InsufficientFundsException:
+            await ctx.send("Você não tem moedas suficientes.")
+        except UserNotFoundException:
+            await ctx.send("Usuário não encontrado.")
 
     @commands.command(name='vender', help='Venda um item por uma quantidade de moedas')
     async def vender(self, ctx, item: str, amount: int):
@@ -74,7 +84,7 @@ class Economy(commands.Cog):
                 await ctx.send("Venda cancelada.")
         except asyncio.TimeoutError:
             await ctx.send("Tempo esgotado. A venda foi cancelada.")
-        except Exception as e:
+        except Exception:
             await ctx.send("Ocorreu um erro ao vender o item.")
 
     @commands.command(name='roubar', help='Rouba uma quantia de moedas de outro usuário')
@@ -103,7 +113,7 @@ class Economy(commands.Cog):
                 await ctx.send(f"Você roubou {amount} moedas de {member.display_name}!")
             else:
                 await ctx.send("O roubo falhou e você não conseguiu roubar nada.")
-        except Exception as e:
+        except Exception:
             await ctx.send("Ocorreu um erro ao roubar.")
 
     @commands.command(name='inventario', help='Mostra seu inventário e itens disponíveis para venda')
@@ -117,6 +127,6 @@ class Economy(commands.Cog):
             itens_para_venda_str = "\n".join([f"{item}: {preco} moedas" for item, preco in itens_para_venda.items()]) if itens_para_venda else "Não há itens disponíveis para venda no momento."
 
             await ctx.send(f"**Seu inventário:**\n{inventario_str}\n\n**Itens disponíveis para venda:**\n{itens_para_venda_str}")
-        except Exception as e:
+        except Exception:
             await ctx.send("Ocorreu um erro ao exibir o inventário e os itens para venda.")
 
