@@ -1,4 +1,8 @@
 import os
+import discord
+import asyncio
+import random
+import sqlite3
 import logging
 
 from discord import Intents
@@ -44,6 +48,10 @@ def help_command(message, args, meta):
 
     return f"```asciidoc\n{help_message}```"
 
+@bot.command(name='link', help='Abre um link fornecido pelo usuário')
+async def link(ctx, url: str):
+    await ctx.send(f'Aqui está o link que você solicitou: {url}')
+
 @bot.event
 async def on_ready():   
     logger.info(f"Bot está online como {bot.user.name}")
@@ -75,32 +83,24 @@ async def on_message(message):
     print(f"Menssagem Recebida: {message.content} ") # Apenas para depuração, fora disso é anti ético
 
     if not message.author.bot:  # Certifica-se de que o autor da mensagem não seja um bot
-        cog = bot.get_cog('Economy')
-        if cog:
-            data_manager = cog.data_manager
-            user_id = message.author.id
-            if not data_manager.user_exists(user_id):
-                data_manager.register_new_user(user_id)
-                await message.channel.send(f"Bem-vindo, {message.author.mention}! Uma nova conta foi criada para você com 100 moedas iniciais.")
+        user_id = message.author.id
+        data_manager = bot.get_cog('Economy').data_manager
+        if not data_manager.user_exists(user_id):
+            data_manager.register_new_user(user_id)
+            await message.channel.send(f"Bem-vindo, {message.author.mention}! Uma nova conta foi criada para você com 100 moedas iniciais.")
     await bot.process_commands(message)
 
-
-class MyCog(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send('Você esqueceu de fornecer um argumento necessário para este comando.')
-        elif isinstance(error, commands.CommandNotFound):
-            await ctx.send('Este comando não existe.')
-        else:
-            logger.error(f'Erro ao executar o comando {ctx.command}: {error}')
+@commands.Cog.listener()
+async def on_command_error(self, ctx, error):
+    if isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send('Você esqueceu de fornecer um argumento necessário para este comando.')
+    elif isinstance(error, commands.CommandNotFound):
+        await ctx.send('Este comando não existe.')
+    else:
+        logger.error(f'Erro ao executar o comando {ctx.command}: {error}')
 
 # Carregar extensões
-bot.add_cog(MyCog(bot))
-bot.add_cog(Economy(bot))
+#bot.add_cog(Economy(bot))
 bot.add_cog(Fun(bot))
 bot.add_cog(Games(bot))
 bot.add_cog(Trapaca(bot))
