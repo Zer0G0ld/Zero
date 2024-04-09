@@ -36,6 +36,7 @@ deactivate
 ```
 pip install -r requirements.txt
 ```
+
 # Informações sobre o projeto
 <p>Dividi o projeto em pastas para ficar mais facil de entender.</p>
 
